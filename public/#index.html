@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>API Test</title>
+</head>
+<body>
+    <h1>API Test</h1>
+
+    <!-- 全ユーザー取得 -->
+    <h2>GET All Users</h2>
+    <button onclick="getUsers()">Get All Users</button>
+
+    <!-- ユーザー作成 -->
+    <h2>POST Create User</h2>
+    <input type="text" id="name" placeholder="Name">
+    <input type="email" id="email" placeholder="Email">
+    <input type="number" id="age" placeholder="Age">
+    <button onclick="createUser()">Create User</button>
+
+    <!-- ユーザー取得 -->
+    <h2>GET User by ID</h2>
+    <input type="text" id="getUserId" placeholder="User ID">
+    <button onclick="getUser()">Get User</button>
+
+    <!-- ユーザー更新 -->
+    <h2>PUT Update User</h2>
+    <input type="text" id="updateId" placeholder="User ID">
+    <input type="text" id="updateName" placeholder="New Name">
+    <input type="email" id="updateEmail" placeholder="New Email">
+    <input type="number" id="updateAge" placeholder="New Age">
+    <button onclick="updateUser()">Update User</button>
+
+    <!-- ユーザー削除 -->
+    <h2>DELETE User</h2>
+    <input type="text" id="deleteId" placeholder="User ID">
+    <button onclick="deleteUser()">Delete User</button>
+
+    <!-- レスポンス表示 -->
+    <h2>Response</h2>
+    <pre id="response"></pre>
+
+    <script>
+        const API = 'http://localhost:3000/api';
+
+        function showResponse(data) {
+            document.getElementById('response').textContent = JSON.stringify(data, null, 2);
+        }
+
+        async function request(url, method = 'GET', data = null) {
+            try {
+                const options = { method };
+                if (data) {
+                    options.headers = { 'Content-Type': 'application/json' };
+                    options.body = JSON.stringify(data);
+                }
+                const response = await fetch(url, options);
+                const result = await response.json();
+                showResponse(result);
+            } catch (error) {
+                showResponse({ error: error.message });
+            }
+        }
+
+        function getUsers() {
+            request(`${API}/users`);
+        }
+
+        function createUser() {
+            const name = document.getElementById('name').value;
+            const email = document.getElementById('email').value;
+            const age = document.getElementById('age').value;
+            
+            const data = { name, email };
+            if (age) data.age = parseInt(age);
+            
+            request(`${API}/users`, 'POST', data);
+        }
+
+        function getUser() {
+            const id = document.getElementById('getUserId').value;
+            request(`${API}/users/${id}`);
+        }
+
+        function updateUser() {
+            const id = document.getElementById('updateId').value;
+            const name = document.getElementById('updateName').value;
+            const email = document.getElementById('updateEmail').value;
+            const age = document.getElementById('updateAge').value;
+            
+            const data = {};
+            if (name) data.name = name;
+            if (email) data.email = email;
+            if (age) data.age = parseInt(age);
+            
+            request(`${API}/users/${id}`, 'PUT', data);
+        }
+
+        function deleteUser() {
+            const id = document.getElementById('deleteId').value;
+            request(`${API}/users/${id}`, 'DELETE');
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Test</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', sans-serif;
+            background: #0f0f23;
+            min-height: 100vh;
+            padding: 20px;
+            color: #e4e4e7;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: #1c1c2e;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            border: 1px solid #2a2a3e;
+            overflow: hidden;
+        }
+
+        .header {
+            background: #18181b;
+            color: #fafafa;
+            padding: 40px 30px;
+            text-align: center;
+            border-bottom: 1px solid #2a2a3e;
+        }
+
+        .header h1 {
+            font-size: 2.2rem;
+            margin-bottom: 8px;
+            font-weight: 600;
+            letter-spacing: -0.025em;
+        }
+
+        .header p {
+            color: #a1a1aa;
+            font-size: 0.95rem;
+            font-weight: 400;
+        }
+
+        .content {
+            padding: 30px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            align-items: start;
+        }
+
+        .left-column {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            height: 100%;
+        }
+
+        .right-column {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            height: 100%;
+        }
+
+        .left-column .section {
+            flex: 1;
+        }
+
+        .right-column .section {
+            flex: 1.5;
+        }
+
+        .section {
+            background: #27273a;
+            border-radius: 8px;
+            padding: 24px;
+            border: 1px solid #3f3f54;
+            transition: all 0.2s ease;
+        }
+
+        .section:hover {
+            border-color: #525266;
+            background: #2a2a3f;
+        }
+
+        .section h2 {
+            color: #fafafa;
+            margin-bottom: 20px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .section h2::before {
+            content: '';
+            width: 6px;
+            height: 6px;
+            background: #6366f1;
+            border-radius: 50%;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid #3f3f54;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
+            background: #1c1c2e;
+            color: #fafafa;
+        }
+
+        input::placeholder {
+            color: #71717a;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #6366f1;
+            box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.1);
+            background: #18181b;
+        }
+
+        button {
+            background: #6366f1;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            width: 100%;
+            margin-top: 16px;
+        }
+
+        button:hover {
+            background: #5855eb;
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        .response-section {
+            grid-column: 1 / -1;
+            margin-top: 0;
+        }
+
+        .response-container {
+            background: #18181b;
+            border-radius: 6px;
+            padding: 20px;
+            margin-top: 16px;
+            border: 1px solid #3f3f54;
+        }
+
+        #response {
+            color: #d4d4d8;
+            font-family: 'JetBrains Mono', 'SF Mono', 'Monaco', 'Inconsolata', 'Fira Code', monospace;
+            font-size: 0.85rem;
+            line-height: 1.6;
+            white-space: pre-wrap;
+            margin: 0;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-left: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .status-success {
+            background: rgba(34, 197, 94, 0.15);
+            color: #22c55e;
+            border: 1px solid rgba(34, 197, 94, 0.2);
+        }
+
+        .status-error {
+            background: rgba(239, 68, 68, 0.15);
+            color: #ef4444;
+            border: 1px solid rgba(239, 68, 68, 0.2);
+        }
+
+        .loading {
+            opacity: 0.7;
+            pointer-events: none;
+        }
+
+        .loading button::after {
+            content: '';
+            display: inline-block;
+            width: 14px;
+            height: 14px;
+            border: 2px solid transparent;
+            border-top: 2px solid rgba(255, 255, 255, 0.6);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-left: 8px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            .content {
+                grid-template-columns: 1fr;
+                gap: 20px;
+                padding: 20px;
+            }
+
+            .left-column, .right-column {
+                gap: 20px;
+            }
+
+            .left-column .section, .right-column .section {
+                flex: none;
+            }
+
+            .header h1 {
+                font-size: 1.8rem;
+            }
+
+            .section {
+                padding: 20px;
+            }
+        }
+
+        .clear-btn {
+            background: #525266;
+            width: auto;
+            display: inline-block;
+            margin-left: 12px;
+            padding: 6px 16px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .clear-btn:hover {
+            background: #6b6b7d;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>API Test Dashboard</h1>
+            <p>RESTful API のテスト用インターフェース</p>
+        </div>
+
+        <div class="content">
+            <div class="left-column">
+                <!-- 全ユーザー取得 -->
+                <div class="section">
+                    <h2>全ユーザー取得</h2>
+                    <button onclick="getUsers()">Get All Users</button>
+                </div>
+
+                <!-- ユーザー取得 -->
+                <div class="section">
+                    <h2>ユーザー検索</h2>
+                    <div class="form-group">
+                        <input type="text" id="getUserId" placeholder="ユーザーIDを入力">
+                    </div>
+                    <button onclick="getUser()">Get User</button>
+                </div>
+
+                <!-- ユーザー削除 -->
+                <div class="section">
+                    <h2>ユーザー削除</h2>
+                    <div class="form-group">
+                        <input type="text" id="deleteId" placeholder="削除するユーザーID">
+                    </div>
+                    <button onclick="deleteUser()">Delete User</button>
+                </div>
+            </div>
+
+            <div class="right-column">
+                <!-- ユーザー作成 -->
+                <div class="section">
+                    <h2>ユーザー作成</h2>
+                    <div class="form-group">
+                        <input type="text" id="name" placeholder="名前を入力">
+                    </div>
+                    <div class="form-group">
+                        <input type="email" id="email" placeholder="メールアドレスを入力">
+                    </div>
+                    <div class="form-group">
+                        <input type="number" id="age" placeholder="年齢を入力">
+                    </div>
+                    <button onclick="createUser()">Create User</button>
+                </div>
+
+                <!-- ユーザー更新 -->
+                <div class="section">
+                    <h2>ユーザー更新</h2>
+                    <div class="form-group">
+                        <input type="text" id="updateId" placeholder="更新するユーザーID">
+                    </div>
+                    <div class="form-group">
+                        <input type="text" id="updateName" placeholder="新しい名前">
+                    </div>
+                    <div class="form-group">
+                        <input type="email" id="updateEmail" placeholder="新しいメールアドレス">
+                    </div>
+                    <div class="form-group">
+                        <input type="number" id="updateAge" placeholder="新しい年齢">
+                    </div>
+                    <button onclick="updateUser()">Update User</button>
+                </div>
+            </div>
+
+            <!-- レスポンス表示 -->
+            <div class="section response-section">
+                <h2>API レスポンス
+                    <span id="statusIndicator"></span>
+                    <button class="clear-btn" onclick="clearResponse()">Clear</button>
+                </h2>
+                <div class="response-container">
+                    <pre id="response">レスポンスがここに表示されます...</pre>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API = 'http://localhost:3000/api';
+
+        function showResponse(data, isError = false) {
+            const responseElement = document.getElementById('response');
+            const statusIndicator = document.getElementById('statusIndicator');
+            
+            responseElement.textContent = JSON.stringify(data, null, 2);
+            
+            // ステータス表示を更新
+            statusIndicator.innerHTML = isError ? 
+                '<span class="status-indicator status-error">ERROR</span>' : 
+                '<span class="status-indicator status-success">SUCCESS</span>';
+        }
+
+        function clearResponse() {
+            document.getElementById('response').textContent = 'レスポンスがここに表示されます...';
+            document.getElementById('statusIndicator').innerHTML = '';
+        }
+
+        function setLoading(element, isLoading) {
+            if (isLoading) {
+                element.classList.add('loading');
+            } else {
+                element.classList.remove('loading');
+            }
+        }
+
+        async function request(url, method = 'GET', data = null) {
+            const button = event.target;
+            setLoading(button.closest('.section'), true);
+            
+            try {
+                const options = { 
+                    method,
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                };
+                
+                if (data) {
+                    options.body = JSON.stringify(data);
+                }
+                
+                const response = await fetch(url, options);
+                const result = await response.json();
+                
+                showResponse(result, !response.ok);
+                
+                // フォームをクリア（成功時のみ）
+                if (response.ok && method === 'POST') {
+                    clearCreateForm();
+                }
+                
+            } catch (error) {
+                showResponse({ 
+                    error: error.message,
+                    timestamp: new Date().toISOString()
+                }, true);
+            } finally {
+                setLoading(button.closest('.section'), false);
+            }
+        }
+
+        function clearCreateForm() {
+            document.getElementById('name').value = '';
+            document.getElementById('email').value = '';
+            document.getElementById('age').value = '';
+        }
+
+        function getUsers() {
+            request(`${API}/users`);
+        }
+
+        function createUser() {
+            const name = document.getElementById('name').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const age = document.getElementById('age').value;
+            
+            // バリデーション
+            if (!name || !email) {
+                showResponse({ 
+                    error: 'Name and Email are required fields',
+                    timestamp: new Date().toISOString()
+                }, true);
+                return;
+            }
+            
+            // メール形式チェック
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                showResponse({ 
+                    error: 'Invalid email format',
+                    timestamp: new Date().toISOString()
+                }, true);
+                return;
+            }
+            
+            const data = { name, email };
+            if (age && !isNaN(age)) {
+                data.age = parseInt(age);
+            }
+            
+            request(`${API}/users`, 'POST', data);
+        }
+
+        function getUser() {
+            const id = document.getElementById('getUserId').value.trim();
+            if (!id) {
+                showResponse({ 
+                    error: 'User ID is required',
+                    timestamp: new Date().toISOString()
+                }, true);
+                return;
+            }
+            request(`${API}/users/${id}`);
+        }
+
+        function updateUser() {
+            const id = document.getElementById('updateId').value.trim();
+            const name = document.getElementById('updateName').value.trim();
+            const email = document.getElementById('updateEmail').value.trim();
+            const age = document.getElementById('updateAge').value;
+            
+            if (!id) {
+                showResponse({ 
+                    error: 'User ID is required for update',
+                    timestamp: new Date().toISOString()
+                }, true);
+                return;
+            }
+            
+            const data = {};
+            if (name) data.name = name;
+            if (email) {
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!emailRegex.test(email)) {
+                    showResponse({ 
+                        error: 'Invalid email format',
+                        timestamp: new Date().toISOString()
+                    }, true);
+                    return;
+                }
+                data.email = email;
+            }
+            if (age && !isNaN(age)) data.age = parseInt(age);
+            
+            if (Object.keys(data).length === 0) {
+                showResponse({ 
+                    error: 'At least one field must be provided for update',
+                    timestamp: new Date().toISOString()
+                }, true);
+                return;
+            }
+            
+            request(`${API}/users/${id}`, 'PUT', data);
+        }
+
+        function deleteUser() {
+            const id = document.getElementById('deleteId').value.trim();
+            if (!id) {
+                showResponse({ 
+                    error: 'User ID is required for deletion',
+                    timestamp: new Date().toISOString()
+                }, true);
+                return;
+            }
+            
+            if (confirm(`ユーザー ID: ${id} を削除してもよろしいですか？`)) {
+                request(`${API}/users/${id}`, 'DELETE');
+            }
+        }
+
+        // エンターキーでの送信対応
+        document.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                const activeElement = document.activeElement;
+                if (activeElement.tagName === 'INPUT') {
+                    const section = activeElement.closest('.section');
+                    const button = section.querySelector('button');
+                    if (button) {
+                        button.click();
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
